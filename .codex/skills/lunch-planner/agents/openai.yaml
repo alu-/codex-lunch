@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lunch Planner"
+  short_description: "Fetch and summarize daily lunch menus"
+  default_prompt: "Use $lunch-planner to fetch today's lunch menus and summarize the best options."
