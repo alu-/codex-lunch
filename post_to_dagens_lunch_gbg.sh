@@ -28,7 +28,7 @@ Environment:
 Notes:
   - Sends an application/json POST to chat.postMessage.
   - Automatically loads .env from this script's directory if present.
-  - Uses the top-level text field for the message body.
+  - Uses the top-level markdown_text field for the message body.
 EOF
 }
 
@@ -62,13 +62,13 @@ if command -v jq >/dev/null 2>&1; then
   payload=$(
     jq -n \
       --arg channel "$channel" \
-      --arg text "$message_text" \
-      '{channel: $channel, text: $text}'
+      --arg markdown_text "$message_text" \
+      '{channel: $channel, markdown_text: $markdown_text}'
   )
 else
   escaped_text=$(printf '%s' "$message_text" | sed 's/\\/\\\\/g; s/"/\\"/g')
   escaped_channel=$(printf '%s' "$channel" | sed 's/\\/\\\\/g; s/"/\\"/g')
-  payload=$(printf '{"channel":"%s","text":"%s"}' "$escaped_channel" "$escaped_text")
+  payload=$(printf '{"channel":"%s","markdown_text":"%s"}' "$escaped_channel" "$escaped_text")
 fi
 
 response=$(

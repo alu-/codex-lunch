@@ -10,7 +10,9 @@ if [[ "$output_file" != /* ]]; then
 fi
 
 prompt=$(cat <<'EOF'
-$lunch-planner
+Use $lunch-planner and format the output as markdown.
+Decorate the menu items with icons. If Meat/Kött then use a meat icon, fish/fisk then use a fish icon, etc.
+If showing a price then use a money icon. Add other icons if suitable, but not to many inline icons.
 EOF
 )
 
