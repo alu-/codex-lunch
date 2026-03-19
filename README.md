@@ -8,4 +8,4 @@
 - https://restaurangdj.se/veckans-meny/
 - https://www.restaurangtegel.com/lunch/
 - https://www.spotonrestaurang.se/meny
-- https://www.kvartersmenyn.se/mobile_site/rest/13943
+- https://lunchverkstan.se/veckans-meny/

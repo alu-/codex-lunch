@@ -10,4 +10,4 @@ Use this list as the default set of restaurants for lunch lookups unless the use
 - Restaurang D.J: https://restaurangdj.se/veckans-meny/
 - Restaurang Tegel: https://www.restaurangtegel.com/lunch/
 - Spot On Restaurang: https://www.spotonrestaurang.se/meny
-- VW Lunchverkstan: https://www.kvartersmenyn.se/mobile_site/rest/13943
+- VW Lunchverkstan: https://lunchverkstan.se/veckans-meny/
