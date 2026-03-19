@@ -6,7 +6,7 @@ Use this list as the default set of restaurants for lunch lookups unless the use
 - Ceno Brasserie: https://ceno.se/lunch/
 - Bistro 26: https://www.bistro26.se/#lunch
 - Vin Kultur och Mat: https://vinkulturochmat.kvartersmenyn.se/
-- Buon Cibo: https://buoncibo.se/lunch/
+- Buon Cibo: https://buoncibo.se/hela-veckans-lunch/
 - Restaurang D.J: https://restaurangdj.se/veckans-meny/
 - Restaurang Tegel: https://www.restaurangtegel.com/lunch/
 - Spot On Restaurang: https://www.spotonrestaurang.se/meny
