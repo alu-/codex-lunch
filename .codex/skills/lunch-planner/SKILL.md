@@ -7,36 +7,38 @@ description: Fetch, extract, and summarize restaurant lunch menus from websites 
 
 ## Overview
 
-Find current lunch information, verify that it is for the correct date, and reduce raw restaurant page content into a compact answer that highlights actual dishes instead of site chrome.
+Find current lunch information in the local prepared inputs, verify that it is for the correct date, and reduce raw restaurant page content into a compact answer that highlights actual dishes instead of site chrome.
 
 Paths in this skill are relative to the skill directory, not the repository root. For example, `references/restaurants.md` resolves to `.codex/skills/lunch-planner/references/restaurants.md`.
 
 Use `references/restaurants.md` as the default restaurant list unless the user explicitly adds, removes, or overrides sources for the current task.
 
+This skill assumes a shell script has already fetched each restaurant page and run the extractor. The skill should only read those local files and produce the final summary. It should not fetch webpages itself and it should not run the extraction helper itself.
+
 ## Workflow
 
 1. Load `references/restaurants.md` from the skill directory and treat those restaurants as the user's standing lunch sources.
-2. Fetch the live page content when the request is about today's or this week's lunch. Use a Chrome-like HTTP user agent by default when making web requests.
-3. Confirm the menu date explicitly from the visible menu content. Use absolute dates in the answer.
-4. Save fetched webpage content and always run `scripts/extract_menu_text.py` from the skill directory on it before interpreting the menu. Use the cleaned plain text as the model input, even if the page looks simple.
-5. Summarize only dishes that are actually available for the requested date.
-6. Include prices, vegetarian options, allergens, or lunch hours only when the source provides them.
-7. Do not append a separate source summary section at the end. Put the source URL directly in each restaurant heading, for example `Restaurant Name (https://example.com/menu)`.
-8. Write the final answer in Swedish, even if some source pages or dish labels are in English.
-9. Order restaurants with a confirmed menu for the requested day first. Put restaurants with a fixed menu, a non-day-specific menu, or an unverified menu later in the list.
-10. If a source does not contain any menu for the current week, save both the fetched HTML and the extracted plain text under a repo-level `debug/` directory for inspection.
-11. End the response immediately after the lunch menu. Do not add follow-up questions, offers to refine the result, or any extra commentary before or after the menu.
+2. Read the local manifest prepared by the shell script when it is available, for example `tmp/lunch-planner/manifest.md`, and use it to find the local HTML and extracted text files for each restaurant.
+3. Confirm the menu date explicitly from the visible menu content in the extracted text. Use absolute dates in the answer.
+4. Use the prepared extracted plain text as the primary model input, even if the matching HTML is also available.
+5. Read the local HTML only when the extracted text is ambiguous and you need to double-check that the extracted text preserved the visible menu correctly.
+6. Summarize only dishes that are actually available for the requested date.
+7. Include prices, vegetarian options, allergens, or lunch hours only when the source provides them.
+8. Do not append a separate source summary section at the end. Put the source URL directly in each restaurant heading, for example `Restaurant Name (https://example.com/menu)`.
+9. Write the final answer in Swedish, even if some source pages or dish labels are in English.
+10. Order restaurants with a confirmed menu for the requested day first. Put restaurants with a fixed menu, a non-day-specific menu, or an unverified menu later in the list.
+11. If a source does not contain any menu for the current week, mention that directly from the local files instead of guessing.
+12. End the response immediately after the lunch menu. Do not add follow-up questions, offers to refine the result, or any extra commentary before or after the menu.
 
 ## Extraction Rules
 
 - Prefer official restaurant pages over aggregators.
-- When fetching pages directly, send a Chrome-like user agent to reduce simplistic bot blocking.
 - Ignore metadata timestamps such as `dateModified`, SEO fields, JSON-LD dates, and similar page metadata when judging whether a menu is current. Base freshness on the visible menu content only.
 - Treat "today", "tomorrow", and weekday labels as date-sensitive. Resolve them against the current date before summarizing.
 - If the visible menu contains explicit day-and-month labels such as `Tisdag 17 mars`, treat those visible labels as authoritative for date verification.
 - Do not invent or substitute a missing month or day from unrelated visible numbers such as copyright years, opening hours, phone numbers, prices, or other page furniture.
 - Do not say that the page "shows" a specific full date unless that full date, or an unambiguous weekday plus day-and-month equivalent, is actually present in the visible menu text.
-- Ignore page furniture such as navigation, cookie banners, booking widgets, and repeated footer text. Rely on `scripts/extract_menu_text.py` from the skill directory to remove this before summarizing.
+- Ignore page furniture such as navigation, cookie banners, booking widgets, and repeated footer text. The prepared extracted text should already remove most of this noise.
 - Keep dish names close to their neighboring prices or labels when extracting.
 - If the page lists a whole week, return only the requested day unless the user asks for a weekly comparison.
 - If the source is ambiguous or stale, say so directly instead of guessing.
@@ -46,30 +48,24 @@ Use `references/restaurants.md` as the default restaurant list unless the user e
 - VW Lunchverkstan shows the current week's menu without explicit dates. Treat its visible weekly menu as current for the present week, but note that the source does not print calendar dates.
 - Pho 88 has a fixed menu that stays the same. Treat it as a non-day-specific fixed menu rather than trying to verify a current week or date from the page.
 
-## Downloading inputs
+## Local Inputs
 
-When the user asks for a lunch source, download it with:
-
-```bash
-curl -L "https://example.com/" -o tmp/source.html
-```
-
-Save downloads under tmp/ unless the user requested another location.
-If the file already exists, overwrite it.
-After downloading, inspect the file before using it.
-If a source does not contain any menu for the current week, also copy the fetched HTML into a repo-level `debug/` directory using a restaurant-specific filename.
-
-## Using The Helper Script
-
-Run the helper on every saved webpage or provided HTML/text before interpreting the menu:
+The expected default input layout is:
 
 ```bash
-python3 .codex/skills/lunch-planner/scripts/extract_menu_text.py page.html
-python3 .codex/skills/lunch-planner/scripts/extract_menu_text.py restaurant-a.html restaurant-b.html
+tmp/lunch-planner/manifest.md
+tmp/lunch-planner/restaurant-name.html
+tmp/lunch-planner/restaurant-name.txt
 ```
 
-The script removes HTML, CSS, JavaScript, SVG, and template content, then prints cleaned plain text. Always use that cleaned text as model input instead of relying on raw webpage content or brittle rule-based menu extraction.
-If a source does not contain any menu for the current week, save the extracted plain text into the repo-level `debug/` directory next to the saved HTML.
+The manifest should map each restaurant name and URL to its local HTML and extracted text files.
+Prefer the extracted text files as the main input.
+Do not fetch webpages from inside the skill when these local files are present.
+
+## Preprocessing Boundary
+
+Fetching and extraction are preprocessing steps owned by the shell script, not by this skill.
+This skill should consume the prepared files and produce the compiled lunch summary.
 
 ## Output Shape
 
