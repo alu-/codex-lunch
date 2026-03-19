@@ -33,6 +33,9 @@ Use `references/restaurants.md` as the default restaurant list unless the user e
 - When fetching pages directly, send a Chrome-like user agent to reduce simplistic bot blocking.
 - Ignore metadata timestamps such as `dateModified`, SEO fields, JSON-LD dates, and similar page metadata when judging whether a menu is current. Base freshness on the visible menu content only.
 - Treat "today", "tomorrow", and weekday labels as date-sensitive. Resolve them against the current date before summarizing.
+- If the visible menu contains explicit day-and-month labels such as `Tisdag 17 mars`, treat those visible labels as authoritative for date verification.
+- Do not invent or substitute a missing month or day from unrelated visible numbers such as copyright years, opening hours, phone numbers, prices, or other page furniture.
+- Do not say that the page "shows" a specific full date unless that full date, or an unambiguous weekday plus day-and-month equivalent, is actually present in the visible menu text.
 - Ignore page furniture such as navigation, cookie banners, booking widgets, and repeated footer text. Rely on `scripts/extract_menu_text.py` from the skill directory to remove this before summarizing.
 - Keep dish names close to their neighboring prices or labels when extracting.
 - If the page lists a whole week, return only the requested day unless the user asks for a weekly comparison.
