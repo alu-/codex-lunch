@@ -24,7 +24,8 @@ Use `references/restaurants.md` as the default restaurant list unless the user e
 7. Do not append a separate source summary section at the end. Put the source URL directly in each restaurant heading, for example `Restaurant Name (https://example.com/menu)`.
 8. Write the final answer in Swedish, even if some source pages or dish labels are in English.
 9. Order restaurants with a confirmed menu for the requested day first. Put restaurants with a fixed menu, a non-day-specific menu, or an unverified menu later in the list.
-10. End the response immediately after the lunch menu. Do not add follow-up questions, offers to refine the result, or any extra commentary before or after the menu.
+10. If a source does not contain any menu for the current week, save both the fetched HTML and the extracted plain text under a repo-level `debug/` directory for inspection.
+11. End the response immediately after the lunch menu. Do not add follow-up questions, offers to refine the result, or any extra commentary before or after the menu.
 
 ## Extraction Rules
 
@@ -53,6 +54,7 @@ curl -L "https://example.com/" -o tmp/source.html
 Save downloads under tmp/ unless the user requested another location.
 If the file already exists, overwrite it.
 After downloading, inspect the file before using it.
+If a source does not contain any menu for the current week, also copy the fetched HTML into a repo-level `debug/` directory using a restaurant-specific filename.
 
 ## Using The Helper Script
 
@@ -64,6 +66,7 @@ python3 .codex/skills/lunch-planner/scripts/extract_menu_text.py restaurant-a.ht
 ```
 
 The script removes HTML, CSS, JavaScript, SVG, and template content, then prints cleaned plain text. Always use that cleaned text as model input instead of relying on raw webpage content or brittle rule-based menu extraction.
+If a source does not contain any menu for the current week, save the extracted plain text into the repo-level `debug/` directory next to the saved HTML.
 
 ## Output Shape
 
