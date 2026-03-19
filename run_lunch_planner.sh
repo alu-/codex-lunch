@@ -34,6 +34,8 @@ Do not run the extraction helper again.
 
 EOF
 
+declare -a fetch_pids=()
+
 while IFS= read -r line; do
   [[ $line == "- "*": "* ]] || continue
 
@@ -44,8 +46,11 @@ while IFS= read -r line; do
   html_file="$tmp_dir/$slug.html"
   text_file="$tmp_dir/$slug.txt"
 
-  curl -L -A "$user_agent" "$url" -o "$html_file"
-  python3 "$extractor" "$html_file" >"$text_file"
+  (
+    curl -L -A "$user_agent" "$url" -o "$html_file"
+    python3 "$extractor" "$html_file" >"$text_file"
+  ) &
+  fetch_pids+=("$!")
 
   cat >>"$manifest_file" <<EOF
 ## $name
@@ -55,6 +60,10 @@ while IFS= read -r line; do
 
 EOF
 done <"$restaurants_file"
+
+for pid in "${fetch_pids[@]}"; do
+  wait "$pid"
+done
 
 prompt=$(cat <<'EOF'
 Use $lunch-planner and format the output as markdown.
