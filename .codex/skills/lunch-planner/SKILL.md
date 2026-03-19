@@ -9,14 +9,16 @@ description: Fetch, extract, and summarize restaurant lunch menus from websites 
 
 Find current lunch information, verify that it is for the correct date, and reduce raw restaurant page content into a compact answer that highlights actual dishes instead of site chrome.
 
+Paths in this skill are relative to the skill directory, not the repository root. For example, `references/restaurants.md` resolves to `.codex/skills/lunch-planner/references/restaurants.md`.
+
 Use `references/restaurants.md` as the default restaurant list unless the user explicitly adds, removes, or overrides sources for the current task.
 
 ## Workflow
 
-1. Load `references/restaurants.md` and treat those restaurants as the user's standing lunch sources.
+1. Load `references/restaurants.md` from the skill directory and treat those restaurants as the user's standing lunch sources.
 2. Fetch the live page content when the request is about today's or this week's lunch. Use a Chrome-like HTTP user agent by default when making web requests.
 3. Confirm the menu date explicitly from the visible menu content. Use absolute dates in the answer.
-4. Save fetched webpage content and always run `scripts/extract_menu_text.py` on it before interpreting the menu. Use the cleaned plain text as the model input, even if the page looks simple.
+4. Save fetched webpage content and always run `scripts/extract_menu_text.py` from the skill directory on it before interpreting the menu. Use the cleaned plain text as the model input, even if the page looks simple.
 5. Summarize only dishes that are actually available for the requested date.
 6. Include prices, vegetarian options, allergens, or lunch hours only when the source provides them.
 7. Do not append a separate source summary section at the end. Put the source URL directly in each restaurant heading, for example `Restaurant Name (https://example.com/menu)`.
@@ -30,18 +32,35 @@ Use `references/restaurants.md` as the default restaurant list unless the user e
 - When fetching pages directly, send a Chrome-like user agent to reduce simplistic bot blocking.
 - Ignore metadata timestamps such as `dateModified`, SEO fields, JSON-LD dates, and similar page metadata when judging whether a menu is current. Base freshness on the visible menu content only.
 - Treat "today", "tomorrow", and weekday labels as date-sensitive. Resolve them against the current date before summarizing.
-- Ignore page furniture such as navigation, cookie banners, booking widgets, and repeated footer text. Rely on `scripts/extract_menu_text.py` to remove this before summarizing.
+- Ignore page furniture such as navigation, cookie banners, booking widgets, and repeated footer text. Rely on `scripts/extract_menu_text.py` from the skill directory to remove this before summarizing.
 - Keep dish names close to their neighboring prices or labels when extracting.
 - If the page lists a whole week, return only the requested day unless the user asks for a weekly comparison.
 - If the source is ambiguous or stale, say so directly instead of guessing.
+
+## Source-Specific Notes
+
+- VW Lunchverkstan shows the current week's menu without explicit dates. Treat its visible weekly menu as current for the present week, but note that the source does not print calendar dates.
+- Pho 88 has a fixed menu that stays the same. Treat it as a non-day-specific fixed menu rather than trying to verify a current week or date from the page.
+
+## Downloading inputs
+
+When the user asks for a lunch source, download it with:
+
+```bash
+curl -L "https://example.com/" -o tmp/source.html
+```
+
+Save downloads under tmp/ unless the user requested another location.
+If the file already exists, overwrite it.
+After downloading, inspect the file before using it.
 
 ## Using The Helper Script
 
 Run the helper on every saved webpage or provided HTML/text before interpreting the menu:
 
 ```bash
-python3 scripts/extract_menu_text.py page.html
-python3 scripts/extract_menu_text.py restaurant-a.html restaurant-b.html
+python3 .codex/skills/lunch-planner/scripts/extract_menu_text.py page.html
+python3 .codex/skills/lunch-planner/scripts/extract_menu_text.py restaurant-a.html restaurant-b.html
 ```
 
 The script removes HTML, CSS, JavaScript, SVG, and template content, then prints cleaned plain text. Always use that cleaned text as model input instead of relying on raw webpage content or brittle rule-based menu extraction.
@@ -57,5 +76,5 @@ The script removes HTML, CSS, JavaScript, SVG, and template content, then prints
 - Do not end with a source summary section.
 - Do not add any closing sentence, call to action, or follow-up question after the final restaurant entry.
 
-See `references/output-format.md` for a compact response template and date-handling checklist.
-See `references/restaurants.md` for the persistent restaurant list.
+See `references/output-format.md` in the skill directory for a compact response template and date-handling checklist.
+See `references/restaurants.md` in the skill directory for the persistent restaurant list.
