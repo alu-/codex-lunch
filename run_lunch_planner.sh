@@ -47,7 +47,7 @@ while IFS= read -r line; do
   text_file="$tmp_dir/$slug.txt"
 
   (
-    curl -L -A "$user_agent" "$url" -o "$html_file"
+    curl -sS -L -A "$user_agent" "$url" -o "$html_file"
     python3 "$extractor" "$html_file" >"$text_file"
   ) &
   fetch_pids+=("$!")
